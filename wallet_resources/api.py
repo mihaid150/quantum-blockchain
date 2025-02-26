@@ -2,7 +2,9 @@
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from wallet import Wallet
+
+from wallet_resources.wallet import Wallet
+from wallet_resources.blockchain import load_contract, get_contract_value
 
 app = FastAPI()
 
@@ -13,14 +15,13 @@ class Transaction(BaseModel):
     gas: int
     to: str
     value: int
-    data: str = ""  # data payload optional
+    data: str = ""  # data payload
 
 
-@app.get("/wallet")
+@app.get("")
 async def create_wallet():
     """
-    Endpoint to generate a new wallet using quantum randomness.
-    Note: In production, avoid returning private keys.
+    Endpoint to generate a new wallet_resources using quantum randomness.
     """
     try:
         wallet = Wallet()
@@ -34,13 +35,24 @@ async def create_wallet():
 async def sign_tx(tx: Transaction):
     """
     Endpoint to sign a transaction.
-    In a production system, you would securely persist and retrieve the wallet.
     """
     try:
-        # In this demo, we create a new wallet instance per request.
+        # In this demo, we create a new wallet_resources instance per request.
         wallet = Wallet()
         signed_tx = wallet.sign_transaction(tx.dict())
         return {"signed_transaction": signed_tx.rawTransaction.hex()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/contract/value")
+async def get_contract_state():
+    try:
+        abi_path = "../brownie/build/contracts/MyContract.json"
+        contract_address = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+        contract = load_contract(abi_path, contract_address)
+        current_value = get_contract_value(contract)
+        return {"value": current_value}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

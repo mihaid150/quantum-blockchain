@@ -1,0 +1,19 @@
+compiler:
+  solc:
+    version: "0.8.23"
+    optimizer:
+      enabled: true
+      runs: 200
+    evm_version: "paris"
+
+networks:
+  development:
+    host: "http://127.0.0.1"
+    port: 8545
+    chainid: 1337
+    gas_price: 1000000000  # 1 Gwei
+
+project_structure:
+  contracts: "./contracts"
+  tests: "./tests"
+  build: "./build"
